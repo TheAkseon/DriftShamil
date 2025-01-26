@@ -18,6 +18,7 @@ public class CarMovement : MonoBehaviour
 
     private float _currentMoveSpeed;
     public AnimationCurve SteeringCurve;
+    public float SlipAngle;
 
     private void Start()
     {
@@ -131,6 +132,13 @@ public class CarMovement : MonoBehaviour
     private void ApplySteeringSystem()
     {
         float steeringAngle = SteeringInput * SteeringCurve.Evaluate(_currentMoveSpeed);
+
+        if (SlipAngle < 120f)
+        {
+            steeringAngle += Vector3.SignedAngle(transform.forward, _carRigidbody.velocity + transform.forward, Vector3.up);
+        }
+        steeringAngle = Mathf.Clamp(steeringAngle, -90f, 90f);
+
         WheelColliders.FrontLeftWheel.steerAngle = steeringAngle;
         WheelColliders.FrontRightWheel.steerAngle = steeringAngle;
     }
@@ -139,6 +147,8 @@ public class CarMovement : MonoBehaviour
     {
         GasInput = Input.GetAxis("Vertical");
         SteeringInput = Input.GetAxis("Horizontal");
+
+        SlipAngle = Vector3.Angle(transform.forward, _carRigidbody.velocity - transform.forward);
 
         float movingDirection = Vector3.Dot(transform.forward, _carRigidbody.velocity);
         if (movingDirection < -0.5f && GasInput > 0)
