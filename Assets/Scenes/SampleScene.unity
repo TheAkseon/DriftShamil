@@ -479,6 +479,14 @@ PrefabInstance:
       value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 7574512581442745207, guid: 9e53730839eef3e41ad9948f7f1b0409, type: 3}
+      propertyPath: TireTrail
+      value: 
+      objectReference: {fileID: 544749466699133553, guid: c5afcf03d28ffa8428cae42d230497fd, type: 3}
+    - target: {fileID: 7574512581442745207, guid: 9e53730839eef3e41ad9948f7f1b0409, type: 3}
+      propertyPath: SmokePrefab
+      value: 
+      objectReference: {fileID: 336881577860626725, guid: 9d60c5003a3ccf64a9723f5c086ecbc9, type: 3}
+    - target: {fileID: 7574512581442745207, guid: 9e53730839eef3e41ad9948f7f1b0409, type: 3}
       propertyPath: SteeringCurve.m_PreInfinity
       value: 2
       objectReference: {fileID: 0}

@@ -5,6 +5,9 @@ public class CarMovement : MonoBehaviour
     [SerializeField] private Rigidbody _carRigidbody;
     public WheelColliders WheelColliders;
     public WheelMeshes WheelMeshes;
+    public WheelParticles WheelParticles;
+    public GameObject SmokePrefab;
+    public GameObject TireTrail;
 
     public float GasInput;
     public float SteeringInput;
@@ -19,6 +22,92 @@ public class CarMovement : MonoBehaviour
     private void Start()
     {
         _carRigidbody = GetComponent<Rigidbody>();
+        InstantiateSmoke();
+    }
+
+    private void InstantiateSmoke()
+    {
+        if (SmokePrefab)
+        {
+            WheelParticles.FRWheel = Instantiate(SmokePrefab, WheelColliders.FrontRightWheel.transform.position - Vector3.up * WheelColliders.FrontRightWheel.radius, Quaternion.identity, WheelColliders.FrontRightWheel.transform)
+                .GetComponent<ParticleSystem>();
+            WheelParticles.FLWheel = Instantiate(SmokePrefab, WheelColliders.FrontLeftWheel.transform.position - Vector3.up * WheelColliders.FrontRightWheel.radius, Quaternion.identity, WheelColliders.FrontLeftWheel.transform)
+                .GetComponent<ParticleSystem>();
+            WheelParticles.RRWheel = Instantiate(SmokePrefab, WheelColliders.RearRightWheel.transform.position - Vector3.up * WheelColliders.FrontRightWheel.radius, Quaternion.identity, WheelColliders.RearRightWheel.transform)
+                .GetComponent<ParticleSystem>();
+            WheelParticles.RLWheel = Instantiate(SmokePrefab, WheelColliders.RearLeftWheel.transform.position - Vector3.up * WheelColliders.FrontRightWheel.radius, Quaternion.identity, WheelColliders.RearLeftWheel.transform)
+                .GetComponent<ParticleSystem>();
+        }
+        if (TireTrail)
+        {
+            WheelParticles.FRWheelTrail = Instantiate(TireTrail, WheelColliders.FrontRightWheel.transform.position - Vector3.up * WheelColliders.FrontRightWheel.radius, Quaternion.identity, WheelColliders.FrontRightWheel.transform)
+                .GetComponent<TrailRenderer>();
+            WheelParticles.FLWheelTrail = Instantiate(TireTrail, WheelColliders.FrontLeftWheel.transform.position - Vector3.up * WheelColliders.FrontRightWheel.radius, Quaternion.identity, WheelColliders.FrontLeftWheel.transform)
+                .GetComponent<TrailRenderer>();
+            WheelParticles.RRWheelTrail = Instantiate(TireTrail, WheelColliders.RearRightWheel.transform.position - Vector3.up * WheelColliders.FrontRightWheel.radius, Quaternion.identity, WheelColliders.RearRightWheel.transform)
+                .GetComponent<TrailRenderer>();
+            WheelParticles.RLWheelTrail = Instantiate(TireTrail, WheelColliders.RearLeftWheel.transform.position - Vector3.up * WheelColliders.FrontRightWheel.radius, Quaternion.identity, WheelColliders.RearLeftWheel.transform)
+                .GetComponent<TrailRenderer>();
+        }
+    }
+
+    private void CheckParticles()
+    {
+        WheelHit[] wheelHits = new WheelHit[4];
+        WheelColliders.FrontRightWheel.GetGroundHit(out wheelHits[0]);
+        WheelColliders.FrontLeftWheel.GetGroundHit(out wheelHits[1]);
+
+        WheelColliders.RearRightWheel.GetGroundHit(out wheelHits[2]);
+        WheelColliders.RearLeftWheel.GetGroundHit(out wheelHits[3]);
+
+        float slipAllowance = 0.2f;
+        if ((Mathf.Abs(wheelHits[0].sidewaysSlip) + Mathf.Abs(wheelHits[0].forwardSlip) > slipAllowance))
+        {
+            WheelParticles.FRWheel.Play();
+            WheelParticles.FRWheelTrail.emitting = true;
+        }
+        else
+        {
+            WheelParticles.FRWheel.Stop();
+
+            WheelParticles.FRWheelTrail.emitting = false;
+        }
+        if ((Mathf.Abs(wheelHits[1].sidewaysSlip) + Mathf.Abs(wheelHits[1].forwardSlip) > slipAllowance))
+        {
+            WheelParticles.FLWheel.Play();
+
+            WheelParticles.FLWheelTrail.emitting = true;
+        }
+        else
+        {
+            WheelParticles.FLWheel.Stop();
+
+            WheelParticles.FLWheelTrail.emitting = false;
+        }
+        if ((Mathf.Abs(wheelHits[2].sidewaysSlip) + Mathf.Abs(wheelHits[2].forwardSlip) > slipAllowance))
+        {
+            WheelParticles.RRWheel.Play();
+
+            WheelParticles.RRWheelTrail.emitting = true;
+        }
+        else
+        {
+            WheelParticles.RRWheel.Stop();
+
+            WheelParticles.RRWheelTrail.emitting = false;
+        }
+        if ((Mathf.Abs(wheelHits[3].sidewaysSlip) + Mathf.Abs(wheelHits[3].forwardSlip) > slipAllowance))
+        {
+            WheelParticles.RLWheel.Play();
+
+            WheelParticles.RLWheelTrail.emitting = true;
+        }
+        else
+        {
+            WheelParticles.RLWheel.Stop();
+
+            WheelParticles.RLWheelTrail.emitting = false;
+        }
     }
 
     private void Update()
@@ -30,6 +119,7 @@ public class CarMovement : MonoBehaviour
         ApplyMotorPower();
         ApplyBrake();
         ApplySteeringSystem();
+        CheckParticles();
     }
 
     private void ApplyMotorPower()
@@ -111,4 +201,18 @@ public class WheelMeshes
     public MeshRenderer FrontLeftWheel;
     public MeshRenderer RearRightWheel;
     public MeshRenderer RearLeftWheel;
+}
+[System.Serializable]
+public class WheelParticles
+{
+    public ParticleSystem FRWheel;
+    public ParticleSystem FLWheel;
+    public ParticleSystem RRWheel;
+    public ParticleSystem RLWheel;
+
+    public TrailRenderer FRWheelTrail;
+    public TrailRenderer FLWheelTrail;
+    public TrailRenderer RRWheelTrail;
+    public TrailRenderer RLWheelTrail;
+
 }
